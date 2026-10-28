@@ -1,4 +1,13 @@
 
+
+>>>>>>> 619311dbd22a94486ccae17c309b98cea0a8c63f
+>>>>>>>
+>>>>>>
+>>>>>
+>>>>
+>>>
+>>
+
 # Docker Security Assessment
 
 A secure three-tier web application deployed using Docker Compose, with a Python Flask backend, PostgreSQL database, and Nginx frontend. This project demonstrates container hardening, vulnerability scanning, image publishing, and cryptographic image signing.
