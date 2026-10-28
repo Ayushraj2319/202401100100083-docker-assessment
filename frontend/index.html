@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fest Registration</title>
+</head>
+<body>
+  <h1>Fest Registration</h1>
+
+  <form id="registration-form">
+    <label>
+      Name:
+      <input name="name" required maxlength="100">
+    </label>
+    <br><br>
+    <label>
+      Email:
+      <input name="email" type="email" required maxlength="255">
+    </label>
+    <br><br>
+    <button type="submit">Register</button>
+  </form>
+
+  <p id="message"></p>
+
+  <h2>Health</h2>
+  <pre id="health">Checking...</pre>
+
+  <h2>Registered participants</h2>
+  <button id="refresh">Refresh registrations</button>
+  <ul id="registrations"></ul>
+
+  <script>
+    const message = document.getElementById("message");
+
+    async function loadHealth() {
+      try {
+        const response = await fetch("/api/health");
+        const data = await response.json();
+        document.getElementById("health").textContent =
+          JSON.stringify(data, null, 2);
+      } catch {
+        document.getElementById("health").textContent =
+          "Backend unavailable";
+      }
+    }
+
+    async function loadRegistrations() {
+      const list = document.getElementById("registrations");
+      list.replaceChildren();
+
+      try {
+        const response = await fetch("/api/registrations");
+        const data = await response.json();
+
+        if (!response.ok) throw new Error("Could not load registrations");
+
+        data.forEach(person => {
+          const item = document.createElement("li");
+          item.textContent = `${person.name} — ${person.email}`;
+          list.appendChild(item);
+        });
+      } catch (error) {
+        message.textContent = error.message;
+      }
+    }
+
+    document.getElementById("registration-form")
+      .addEventListener("submit", async event => {
+        event.preventDefault();
+        message.textContent = "Submitting...";
+
+        const form = new FormData(event.target);
+        try {
+          const response = await fetch("/api/register", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+              name: form.get("name"),
+              email: form.get("email")
+            })
+          });
+
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Registration failed");
+
+          message.textContent = "Registration successful";
+          event.target.reset();
+          await loadRegistrations();
+        } catch (error) {
+          message.textContent = error.message;
+        }
+      });
+
+    document.getElementById("refresh")
+      .addEventListener("click", loadRegistrations);
+
+    loadHealth();
+    loadRegistrations();
+  </script>
+</body>
+</html>
